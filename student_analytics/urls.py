@@ -18,13 +18,10 @@ from django.contrib import admin
 from django.urls import path,include
 from django.http import HttpResponse
 
-def home(request):
-    return HttpResponse("Student Analytics API is up and running! *************** Checked And Tested with Postman API")
 
 urlpatterns = [
-    path('', home),
     path('admin/', admin.site.urls),
-    path('api/', include('core.urls')),
+    path('', include('core.urls')),
 ]
 
 

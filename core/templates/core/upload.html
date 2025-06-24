@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Analytics - Home</title>
+    <link rel="stylesheet" href="{% static 'core/style.css' %}">
+</head>
+<body>
+    <h1>Welcome to Student Analytics Dashboard</h1>
+
+    <div style="text-align:center; margin-top:50px;">
+        <h2>EXAMPLES</h2>
+
+        <form action="/student/2560155/" method="get" style="display:inline;">
+            <button type="submit">Student Performance</button>
+        </form>
+
+        <form action="/leaderboard/201/" method="get" style="display:inline;">
+            <button type="submit">Leaderboard</button>
+        </form>
+
+        <form action="/subject/2/" method="get" style="display:inline;">
+            <button type="submit">Subject Analytics</button>
+        </form>
+    </div>
+
+</body>
+</html>

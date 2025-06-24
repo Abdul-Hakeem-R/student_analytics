@@ -1,0 +1,17 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Subject Analytics</title>
+    <link rel="stylesheet" href="{% static 'core/style.css' %}">
+
+</head>
+<body>
+    <h1>Subject Analytics: {{ subject.name }}</h1>
+
+    <p>Average Marks Scored: {{ average }}</p>
+
+    <a href="/">Go Back</a>
+</body>
+</html>

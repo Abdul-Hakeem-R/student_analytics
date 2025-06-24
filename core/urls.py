@@ -1,14 +1,10 @@
 from django.urls import path
-from .views import (
-    UploadResultsView,
-    StudentPerformanceView,
-    SubjectAnalyticsView,
-    LeaderboardView
-)
+from . import views
 
 urlpatterns = [
-    path('upload/', UploadResultsView.as_view(), name='upload-results'),
-    path('students/<int:student_id>/performance/', StudentPerformanceView.as_view(), name='student-performance'),
-    path('subjects/<int:subject_id>/analytics/', SubjectAnalyticsView.as_view(), name='subject-analytics'),
-    path('tests/<int:test_id>/leaderboard/', LeaderboardView.as_view(), name='test-leaderboard'),
+    path('', views.upload_page, name='upload_page'),
+    path('upload/', views.upload_csv, name='upload_csv'),
+    path('student/<int:student_id>/', views.student_performance, name='student_performance'),
+    path('leaderboard/<int:test_id>/', views.leaderboard, name='leaderboard'),
+    path('subject/<int:subject_id>/', views.subject_analytics, name='subject_analytics'),
 ]

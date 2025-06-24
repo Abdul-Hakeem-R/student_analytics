@@ -1,0 +1,28 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Leaderboard</title>
+    <link rel="stylesheet" href="{% static 'core/style.css' %}">
+
+</head>
+<body>
+    <h1>Leaderboard for Test {{ test.id }}</h1>
+
+    <table border="1">
+        <tr>
+            <th>Student Name</th>
+            <th>Marks</th>
+        </tr>
+        {% for result in results %}
+        <tr>
+            <td>{{ result.student.name }}</td>
+            <td>{{ result.marks_scored }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <a href="/">Go Back</a>
+</body>
+</html>

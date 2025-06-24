@@ -1,107 +1,41 @@
-import csv
-import io
-from rest_framework import views, generics, status
-from rest_framework.response import Response
-from django.db.models import Avg
+from django.shortcuts import render, redirect,get_object_or_404
+from django.db.models import Sum
+from django.contrib import messages
 from .models import Student, Subject, Test, Result
-from .serializers import (
-    StudentSerializer,
-    SubjectSerializer,
-    TestSerializer,
-    ResultSerializer,
-    StudentPerformanceSerializer,
-    SubjectAnalyticsSerializer,
-    LeaderboardSerializer
-)
 
-class UploadResultsView(views.APIView):
-    def post(self, request):
-        file = request.FILES.get('file')
-        if not file:
-            return Response({"error": "No file uploaded"}, status=400)
+def upload_page(request):
+    return render(request, 'core/upload.html')
 
-        decoded_file = file.read().decode('utf-8')
-        reader = csv.DictReader(io.StringIO(decoded_file))
-        results_to_create = []
+def upload_csv(request):
+        return render(request, 'core/upload.html')
 
-        for row in reader:
-            try:
-                student_id = int(row['sturecid'])
-                test_id = int(row['testid'])
-                total_marks = sum(
-                    int(row.get(f'a{i}', 0)) if row.get(f'a{i}', 0).isdigit() else 0
-                    for i in range(1, 181)
-                )
+def student_performance(request, student_id):
+    student = Student.objects.get(id=student_id)
+    results = Result.objects.filter(student=student)
+    return render(request, 'core/student_performance.html', {'student': student, 'results': results})
 
-                student = Student.objects.get(id=student_id)
-                test = Test.objects.get(id=test_id)
+def leaderboard(request, test_id):
+    test = Test.objects.get(id=test_id)
+    results = Result.objects.filter(test=test).order_by('-marks_scored')
+    return render(request, 'core/leaderboard.html', {'test': test, 'results': results})
 
-                result = Result(
-                    student=student,
-                    test=test,
-                    marks_scored=total_marks
-                )
-                results_to_create.append(result)
+def subject_analytics(request, subject_id):
+    subject = get_object_or_404(Subject, id=subject_id)
+    tests = Test.objects.filter(subject=subject)
 
-            except Exception as e:
-                print(f"Error processing row: {e}")
+    total_marks = 0
+    total_students = 0
 
-        Result.objects.bulk_create(results_to_create)
+    for test in tests:
+        test_total = Result.objects.filter(test=test).aggregate(total=Sum('marks_scored'))['total'] or 0
+        student_count = Result.objects.filter(test=test).count()
 
-        return Response({
-            "status": "Data uploaded successfully",
-            "records_created": len(results_to_create)
-        })
+        total_marks += test_total
+        total_students += student_count
 
-class StudentPerformanceView(views.APIView):
-    def get(self, request, student_id):
-        try:
-            student = Student.objects.get(id=student_id)
-            results = Result.objects.filter(student=student)
-            data = {
-                "student": student.name,
-                "tests": [
-                    {
-                        "test_id": r.test.id,
-                        "subject": r.test.subject.name,
-                        "test_type": r.test.test_type,
-                        "marks_scored": r.marks_scored,
-                        "total_marks": r.test.total_marks
-                    }
-                    for r in results
-                ]
-            }
-            return Response(data)
-        except Student.DoesNotExist:
-            return Response({"error": "Student not found"}, status=404)
+    average = total_marks / total_students if total_students else 0
 
-class SubjectAnalyticsView(views.APIView):
-    def get(self, request, subject_id):
-        try:
-            subject = Subject.objects.get(id=subject_id)
-            tests = Test.objects.filter(subject=subject)
-            results = Result.objects.filter(test__in=tests)
-            avg_score = results.aggregate(Avg('marks_scored'))['marks_scored__avg'] or 0
-            data = {
-                "subject": subject.name,
-                "average_score": round(avg_score, 2)
-            }
-            return Response(data)
-        except Subject.DoesNotExist:
-            return Response({"error": "Subject not found"}, status=404)
-
-class LeaderboardView(views.APIView):
-    def get(self, request, test_id):
-        try:
-            test = Test.objects.get(id=test_id)
-            results = Result.objects.filter(test=test).order_by('-marks_scored')
-            data = [
-                {
-                    "student": r.student.name,
-                    "marks_scored": r.marks_scored
-                }
-                for r in results
-            ]
-            return Response(data)
-        except Test.DoesNotExist:
-            return Response({"error": "Test not found"}, status=404)
+    return render(request, 'core/subject_analytics.html', {
+        'subject': subject,
+        'average': average
+    })
